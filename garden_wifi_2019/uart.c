@@ -58,23 +58,25 @@ int send_char(char word)
 	return 1;
 }
 
-
-int recv_char(char *word)
+int recv_char(char *rev_buf)
 {
-    int result;	
+    int len;	
 	mm_segment_t oldfs;
 	oldfs = get_fs();
 	set_fs(KERNEL_DS);
-	result=f->f_op->read(f, word,5,&f->f_pos);
-	printk("result=%s\n", word);
+	len=f->f_op->read(f, rev_buf,500,&f->f_pos);
 	set_fs(oldfs);
-	if(result <= 0)
+	if(len <= 0)
 		return -1;
-	else 
-		return 1;
+	else {
+		rev_buf[len+1] = '\0';
+		printk("result=%s\n", rev_buf);
+		return len;
+	}
 }
 
-#define BUFF_SIZE 500
+
+#define BUFF_SIZE 100
 
  int tty_read( int timeout, unsigned char *string) 
 { 
@@ -122,7 +124,7 @@ int recv_char(char *word)
 			strcpy(string, buff); 
 			result = 1;
 		} else { 
-			//printk("debug: failed\n"); 
+			printk("debug: failed\n"); 
 		} 
 		set_fs(oldfs); 
 	} 
@@ -298,9 +300,5 @@ int uart_recv_packet(unsigned char *p, int buffer_len, int *p_ret_len ) {
 		}
 	}
 }
-
-
-
-
 #endif
 

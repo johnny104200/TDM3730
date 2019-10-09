@@ -1522,8 +1522,9 @@ void TimeoutExec(
 	void * SystemSpecific3) 
 {
 	void* buf_send;
-	int ret,i;
+	int ret,i, uart_receive_len;
 	char ctmp[500] = "N";
+	char* uart_receive_buf;
 	unsigned char cancel;
    
 	switch (gState->dev_state ) {
@@ -1569,9 +1570,12 @@ void TimeoutExec(
 					break;
 				}
             }
-			//ret = recv_char(ctmp);
-			ret = tty_read(0,ctmp);
-			printk("uart_receive=%s\n", ctmp);
+			
+			/*uart_receive_len = recv_char(ctmp);
+			//printk("uart_receive_len=%d\n", uart_receive_len);
+			if(uart_receive_len > 0)
+				printk("uart_receive=%s\n", ctmp);*/
+			
 			if(uart_flag) {
 				uart_flag = 0;
 				for(i=0;i<ETH_FRAME_LEN-2*ETH_MAC_LEN;i++) {
@@ -3270,7 +3274,7 @@ int get_buff_char(unsigned char *c)
 		// Critical section
 		spin_unlock_irqrestore(&uartLock, flags); // return to the formally state specified in flags
 		return 1;
-    }else{
+    }else {
         return -1;
     }
 }			   
@@ -3278,16 +3282,14 @@ int get_buff_char(unsigned char *c)
 static void ksocket_start(void)
 {
 	//u32 flags;	
-	int err,size,i,uart_size;
+	int err,size,i,uart_receive_len;
 	unsigned short tmp;
 	/*UART setting initial*/
 	mm_segment_t oldfs;
 	unsigned char *buf;
+	char uart_receive_buf[500];
 	
-	unsigned char *uart_b;
 	int *uart_len;
-	
-	
 	
 	buf = kmalloc(BUFFER_SIZE+1, GFP_KERNEL);
 	if(!buf) {
@@ -3331,8 +3333,8 @@ static void ksocket_start(void)
 	init_uart_send_buf();
 #endif
 
-	OSInitTimer(gState, &gState->TimeoutTimer, GET_TIMER_FUNCTION(TimeoutExec), gState, FALSE);	
-	OSSetTimer(&gState->TimeoutTimer, BROADCAST_DURATION);//start timer peroid=BROADCAST_DURATION
+	//OSInitTimer(gState, &gState->TimeoutTimer, GET_TIMER_FUNCTION(TimeoutExec), gState, FALSE);	
+	//OSSetTimer(&gState->TimeoutTimer, BROADCAST_DURATION);//start timer peroid=BROADCAST_DURATION
 /*	
 #if TDMA_FUNCTION_START==1	
 	tasklet_init(&my_tasklet, my_softirq, (unsigned long)gState );
@@ -3375,7 +3377,11 @@ static void ksocket_start(void)
 	send_cmm_packet(gState, NULL, buf, ETH_FRAME_LEN); // send boradcast out at initialization
 //#endif
 	for(;;) {
-	    if(gState->running ==0)
+		uart_receive_len = recv_char(uart_receive_buf);
+			//printk("uart_receive_len=%d\n", uart_receive_len);
+		if(uart_receive_len > 0)
+			printk("uart_receive=%s\n", uart_receive_buf);
+	    /*if(gState->running ==0)
 			break;
 		size = ksocket_receive(gState->sock, &(gState->socket_address), buf, ETH_FRAME_LEN);
 		///--if(size==ETH_FRAME_LEN)
@@ -3383,7 +3389,7 @@ static void ksocket_start(void)
 			printk("mac=%02x:%02x:%02x:%02x:%02x:%02x\n", PRINT_MAC(gState->socket_address.sll_addr));
 			hex_dump("receive_buf", buf, size);
 			//process_handler(gState ,buf, size);
-		}
+		}*/
 /*
 #if PRINTK_BUF ==1
         if (gState->dev_state == NTBR_STATE_TDMA) {
