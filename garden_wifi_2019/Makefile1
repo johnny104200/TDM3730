@@ -1,0 +1,19 @@
+
+PWD = $(shell pwd)
+
+CC = $(CROSS_COMPILE)gcc 
+
+OBJS = state.o
+		
+TARGET1 := state
+
+CFLAGS = -I/opt/arm-2010.09/arm-none-linux-gnueabi/libc/usr/include/
+
+all: $(OBJS)	
+	$(CC) $(OBJS) -o $(TARGET1) $(CFLAGS)
+
+%.o: %.c	
+	$(CC) $(CFLAGS) -c $<
+	
+clean:
+	rm $(TARGET1) *.o -fr 

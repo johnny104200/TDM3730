@@ -1,0 +1,7 @@
+#
+# Makefile for the Linux network (ethercard) device drivers.
+#
+
+EXTRA_CFLAGS += -I$(KSRC)/include -I.  -I/opt/arm-2010.09/arm-none-linux-gnueabi/libc/usr/include/
+OBJS += state.o
+all: $(OBJS)
